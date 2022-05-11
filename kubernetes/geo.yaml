@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geocitizen-deployment
+  labels:
+    project: geocitizen
+spec:
+  selector:
+    matchLabels:
+      app: geo
+  template:
+    metadata:
+      labels:
+        app: geo
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: geocitizen
+        image: pavlotarnovetskyi/geocitizen:citizenV2
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: geocitizen-service
+spec:
+  type: NodePort
+  selector:
+    app: geo
+  ports:
+  
+
+  - name: tomcat
+    protocol: TCP
+    port: 8080
+    targetPort: 8080  

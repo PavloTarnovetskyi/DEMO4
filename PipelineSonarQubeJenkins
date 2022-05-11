@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+       stages {
+        stage('SCM') {
+            steps {
+                git 'https://github.com/PavloTarnovetskyi/Geocit134.git'
+            }
+        }
+        stage('build') {
+            steps {
+                withMaven(maven:'maven') {
+                    sh '''#!/bin/bash
+                        find src/test/java/com/softserveinc/geocitizen -type f -exec sed -i "s/^\\@Ignore/\\/\\/@Ignore/g" {} + 
+                        mvn clean verify        
+                                             
+                       '''
+                       
+                }
+            }
+        }
+        stage('SonarQube analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    // Optionally use a Maven environment you've configured already
+                    withMaven(maven:'maven') {
+                        sh 'mvn sonar:sonar'
+                    }
+                }
+            }
+        }
+        stage("Quality Gate") {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    // Parameter indicates whether to set pipeline to UNSTABLE if Quality Gate fails
+                    // true = set pipeline to UNSTABLE, false = don't
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }  
+}

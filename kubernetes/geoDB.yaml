@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-deployment
+  labels:
+    project: geocitizen
+spec:
+  selector:
+    matchLabels:
+      app: geo
+  template:
+    metadata:
+      labels:
+        app: geo
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: geocitizen
+        image: pavlotarnovetskyi/geocitizen:postgresgeo_alpine
+        ports:
+        - containerPort: 5432
+          protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-deployment
+spec:
+  type: NodePort
+  selector:
+    app: geo
+  ports:
+  
+
+  - name: db
+    protocol: TCP
+    port: 5432
+    targetPort: 5432  
